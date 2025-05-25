@@ -34,7 +34,7 @@ docker pull bde2020/hadoop-base:2.0.0-hadoop2.7.4-java8
 命令如下：
 -p：映射端口
 -v：挂载地址映射
-docker run -itd --name hadoop-2.7.4 -p 9870:9870 -p 8088:8088 -v /home/share/wordCount/jarDir/:/container/share 018b406bd78b
+docker run -itd --name hadoop-2.7.4 -p 9870:9870 -p 8088:8088 -v /home/share/wordCount/jarDir/:/container/share 018b406bd78b bash
 
 ### 3、 启动HDFS
 执行find / -name start-dfs.sh查找shell脚本地址，

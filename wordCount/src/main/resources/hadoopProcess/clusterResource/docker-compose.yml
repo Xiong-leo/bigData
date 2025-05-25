@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+  namenode:
+    image: registry.cn-hangzhou.aliyuncs.com/leo_repo/basic_practice:hadoop_custom-latest
+    container_name: namenode
+    ports:
+      - "9870:9870"
+      - "9000:9000"
+      - "2222:22"  # 映射 SSH 端口到宿主机
+    volumes:
+      - ./data/namenode:/opt/hadoop/data/namenode
+    # 使用 Docker 网络的内部 DNS
+    networks:
+      - hadoop-network
+    # 显式调用 shell 执行命令，输出日志
+    command: ["/bin/sh", "-c", "/usr/sbin/sshd -D && /opt/hadoop/sbin/start-dfs.sh && /opt/hadoop/sbin/start-yarn.sh && tail -f /opt/hadoop/logs/*.log"]
+
+  datanode1:
+    image: registry.cn-hangzhou.aliyuncs.com/leo_repo/basic_practice:hadoop_custom-latest
+    container_name: datanode1
+    volumes:
+      - ./data/datanode1:/opt/hadoop/data/datanode
+    depends_on:
+      - namenode
+    networks:
+      - hadoop-network
+    ports:
+      - "2223:22"  # 为 datanode1 映射 SSH 端口
+    # 增加等待逻辑，输出日志
+    command: ["/bin/sh", "-c", "while ! nc -z namenode 9000; do sleep 1; done && /usr/sbin/sshd -D && /opt/hadoop/sbin/hadoop-daemon.sh start datanode && /opt/hadoop/sbin/yarn-daemon.sh start nodemanager && tail -f /opt/hadoop/logs/*.log"]
+
+  datanode2:
+    image: registry.cn-hangzhou.aliyuncs.com/leo_repo/basic_practice:hadoop_custom-latest
+    container_name: datanode2
+    volumes:
+      - ./data/datanode2:/opt/hadoop/data/datanode
+    depends_on:
+      - namenode
+    networks:
+      - hadoop-network
+    ports:
+      - "2224:22"  # 为 datanode2 映射 SSH 端口
+    # 增加等待逻辑，输出日志
+    command: ["/bin/sh", "-c", "while ! nc -z namenode 9000; do sleep 1; done && /usr/sbin/sshd -D && /opt/hadoop/sbin/hadoop-daemon.sh start datanode && /opt/hadoop/sbin/yarn-daemon.sh start nodemanager && tail -f /opt/hadoop/logs/*.log"]
+
+networks:
+  hadoop-network:
